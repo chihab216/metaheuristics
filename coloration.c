@@ -112,7 +112,6 @@ int lowest_possible_color(int summit) {
 int dsat(int summit) {
 	int nneigh = nb_neighbours(summit);
 	int neighbouring_colors[nneigh];
-
 	memset(neighbouring_colors, 0, nneigh*sizeof(int));
 	int *my_neighbours = neighbours(summit);
 	for (int k=0; k<nneigh; k++) {
@@ -125,18 +124,18 @@ int dsat(int summit) {
 }
 
 int dsat_max() {
-	int number_neighbours, summit_dsat = 0;
+	int number_neighbours, summit_dsat, current_dsat = 0;
 	int dsat_summit = highest_not_colored_summit();
 	summit_dsat = dsat(summit_dsat);
 	for (int summit=0; summit<size; summit++) {
 		if (colors[summit] == 0) {
-			number_neighbours = nb_neighbours(summit);
-			if (number_neighbours > summit_dsat) {
-				summit_dsat = dsat(summit);
+			current_dsat = dsat(summit);
+			if (current_dsat > summit_dsat) {
+				summit_dsat = current_dsat;
 				dsat_summit = summit;
-			} else if (number_neighbours == summit_dsat) {
+			} else if (current_dsat == summit_dsat) {
 				if (nb_neighbours(dsat_summit) > nb_neighbours(summit)) {
-					summit_dsat = dsat(summit);
+					summit_dsat = current_dsat;
 					dsat_summit = summit;
 				}
 			}
@@ -145,15 +144,14 @@ int dsat_max() {
 	return dsat_summit;
 }
 
-/*int main() {
-	int a[] = {1, 9, 3, 4};
-	printf("%d\n", max(a, 4));
-}
-
 /* Main function */
 
 int main() {
-	readdata("C:/Users/admin/Desktop/dsjc125.1.col");
+	int data = readdata("color/dsjc125.1.col");
+	if (data == 1) {
+		printf("Looks like the file didn't open \n");
+		return 1;
+	}
 	get_ordered_degrees();
 	
 	current_summit = ordered_summits[0];
