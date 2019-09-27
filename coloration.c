@@ -144,31 +144,39 @@ int dsat_max() {
 	return dsat_summit;
 }
 
+int write_solution(char input[]) {
+	FILE *ofp;
+	int l = strlen(input) + 4;
+	char output[l];
+    strcpy(output, "solutions/");
+    strcat(output, input);
+    memmove(output + 10, input + 6, l-5);
+    output[l-3] = 's';
+   	ofp = fopen(output, "w+");
+   	for (int i=0; i<size; i++) {
+   		fprintf(ofp, "%d\n", colors[i]);
+   	}
+   	fclose(ofp);
+}
+
 /* Main function */
 
 int main() {
-	int data = readdata("color/dsjc125.1.col");
-	if (data == 1) {
+
+	char input[] = "color/dsjc125.5.col";
+
+	if (readdata(input) == 1) {
 		printf("Looks like the file didn't open \n");
 		return 1;
 	}
 	get_ordered_degrees();
-	
 	current_summit = ordered_summits[0];
-
 	while(highest_not_colored_summit() != -1) {
 		colors[current_summit] = lowest_possible_color(current_summit);
 		current_summit = dsat_max();
 	}
 	printf("Chromatic number is %d \n", max(colors, size));
-
-	// printf("Current summit : %d \n", current_summit);
-	// colors[83] = 1;
-	// printf("Next summit : %d \n", highest_not_colored_summit());
-	// printf("Its lowest possible color : %d \n", lowest_possible_color(current_summit));
-	// printf("And the dsat summit : %d \n", dsat_max());
-
-
+	write_solution(input);
 	return 0;
 }
 
