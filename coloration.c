@@ -1,17 +1,22 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include <math.h>
+#include <time.h> 
 
 int matrix[1000][1000] = {{0}};
 int ordered_summits[1000];
 int colors[1000] = {0};
-int size, second;
-int current_color, current_summit;
+int temp_colors[1000] = {0};
+int size, current_color, current_summit;
 void print_matrix();
 void print_degrees();
 void print_colors();
+void print_temp_colors();
 void print_neighbours();
+int incoherences();
+void down_count_colors();
+int recuit_simule();
 
 int sum(int *arr, int n) { 
     int sum = 0;
@@ -69,7 +74,7 @@ int readdata (char* fic) {
 			matrix[j-1][i-1] = 1;
 			matrix[i-1][j-1] = 1;
 		} else if (buf[0] == 'p') {
-			sscanf (buf, "p edge %d %d", &size, &second);
+			sscanf (buf, "p edge %d", &size);
 		}
 	}
 	fclose(f);
@@ -124,9 +129,8 @@ int dsat(int summit) {
 }
 
 int dsat_max() {
-	int number_neighbours, summit_dsat, current_dsat = 0;
-	int dsat_summit = highest_not_colored_summit();
-	summit_dsat = dsat(summit_dsat);
+	int summit_dsat, current_dsat = 0;
+	int dsat_summit = 0;
 	for (int summit=0; summit<size; summit++) {
 		if (colors[summit] == 0) {
 			current_dsat = dsat(summit);
@@ -144,7 +148,7 @@ int dsat_max() {
 	return dsat_summit;
 }
 
-int write_solution(char input[]) {
+void write_solution(char input[]) {
 	FILE *ofp;
 	int l = strlen(input) + 4;
 	char output[l];
@@ -159,12 +163,16 @@ int write_solution(char input[]) {
    	fclose(ofp);
 }
 
+
 /* Main function */
 
 int main() {
 
-	char input[] = "color/dsjc125.5.col";
+	srand(time(NULL));
+    // time_t start = time(NULL);
+    // time_t running_time = 60; // _s
 
+	char input[] = "color/dsjc1000.9.col";
 	if (readdata(input) == 1) {
 		printf("Looks like the file didn't open \n");
 		return 1;
@@ -175,12 +183,26 @@ int main() {
 		colors[current_summit] = lowest_possible_color(current_summit);
 		current_summit = dsat_max();
 	}
-	printf("Chromatic number is %d \n", max(colors, size));
+
+	int chromatic_number = max(colors, size);
+
+	printf("Chromatic number is %d \n", chromatic_number);
 	write_solution(input);
+
+	// while (time(NULL) - start < running_time) {
+	// 	down_count_colors(chromatic_number);
+
+	// 	int e = recuit_simule(chromatic_number);
+
+	// 	if (e == 0) {
+	// 		write_solution(input);
+	// 		chromatic_number--;
+	// 		printf("Found %d at %d _s\n", chromatic_number, time(NULL) - start);
+	// 	}
+	// }
+
 	return 0;
 }
-
-
 
 
 /* Other debugging functions */
@@ -202,8 +224,16 @@ void print_degrees() {
 
 void print_colors() {
 	for(int k=0; k<size; k++) {
-		printf("%d \n", colors[k]);
+		printf("%d ", colors[k]);
 	}
+	printf("\n");
+}
+
+void print_temp_colors() {
+	for(int k=0; k<size; k++) {
+		printf("%d ", temp_colors[k]);
+	}
+	printf("\n");
 }
 
 void print_neighbours(int summit) {
@@ -213,4 +243,72 @@ void print_neighbours(int summit) {
 	for(int k=0; k<n; k++) {
 		printf("%d ", *(_neighbours + k));
 	}
+}
+
+
+/* Optimization */
+
+int incoherences() {
+	int result = 0;
+	for (int i=0; i<size; i++) {
+		for (int j=0; j<i; j++) {
+			if (matrix[i][j] == 1) {
+				if (temp_colors[i] == temp_colors[j]) {
+					result++;
+				}
+			}
+		}
+	}
+	return result;
+}
+
+void down_count_colors(int color) {
+	for (int i=0; i<size; i++) {
+		if (colors[i] == color) {
+			colors[i] = rand() % color;
+		}
+	}
+}
+
+void generate_coloration(int chromatic_number) {
+	memcpy(temp_colors, colors, size*sizeof(int));
+	int summit = rand() % size;
+	temp_colors[summit] = rand() % chromatic_number;
+}
+
+float random() {
+	float x = (float)rand()/(float)(RAND_MAX);
+	return x;
+}
+
+/* 
+s := s0
+e := E(s)
+k := 0
+tant que k < kmax et e > emax
+  sn := voisin(s)
+  en := E(sn)
+  si en < e ou aléatoire() < P(en - e, temp(k/kmax)) alors
+    s := sn; e := en
+  k := k + 1
+retourne s
+*/
+
+int recuit_simule(int color) {
+	int kmax = 500000;
+	int en;
+	memcpy(temp_colors, colors, size*sizeof(int));
+	int e = incoherences();
+	int k = 0;
+	while (k<kmax && e>0) {
+		generate_coloration(color);
+		en = incoherences();
+		if (en < e || random() < 0.001) { // exp(en-e/(k/kmax))
+			memcpy(colors, temp_colors, size*sizeof(int));
+			e = en; 
+		}
+		k++;
+	}
+	printf("Final e is %d\n", e);
+	return e;
 }
