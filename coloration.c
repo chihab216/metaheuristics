@@ -199,7 +199,7 @@ int main() {
     time_t running_time = 50; // seconds
     int recuit = 0;
 
-	char input[] = "color/dsjc125.9.col";
+	char input[] = "color/dsjc1000.9.col";
 	if (readdata(input) == 1) {
 		printf("Looks like the file couldn't be opened\n");
 		return 1;
