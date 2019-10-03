@@ -197,6 +197,7 @@ int main() {
 	srand(time(NULL));
     time_t start = time(NULL);
     time_t running_time = 50; // seconds
+    int recuit = 0;
 
 	char input[] = "color/dsjc125.9.col";
 	if (readdata(input) == 1) {
@@ -217,17 +218,19 @@ int main() {
 	printf("Chromatic number is %d \n", chromatic_number);
 	write_solution(input);
 
-	while (time(NULL) - start < running_time) {
-		down_count_colors(chromatic_number);
+	if (recuit == 1) {
+		while (time(NULL) - start < running_time) {
+			down_count_colors(chromatic_number);
 
-		int e = recuit_simule(chromatic_number);
+			int e = recuit_simule(chromatic_number);
 
-		if (e == 0) {
-			write_solution(input);
-			chromatic_number--;
-			printf("Found %d at %d seconds\n", chromatic_number, time(NULL) - start);
-		} else {
-			read_colors(input);
+			if (e == 0) {
+				write_solution(input);
+				chromatic_number--;
+				printf("Found %d at %d seconds\n", chromatic_number, time(NULL) - start);
+			} else {
+				read_colors(input);
+			}
 		}
 	}
 	return 0;
