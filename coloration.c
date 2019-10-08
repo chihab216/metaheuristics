@@ -1,3 +1,14 @@
+/*
+
+This program is written to solve graph coloration problems using the Brelaz approach + Simulated Annnealing.
+
+The argument must provide the relative path to the graph_name.col file.
+A "solutions" folder must exist in the root folder so that the graph_name.sol can be saved.
+
+
+*/
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -20,6 +31,8 @@ int incoherences();
 void down_count_colors();
 float recuit_simule1();
 int recuit_simule();
+int recuit_simule2();
+int cost();
 
 
 
@@ -195,14 +208,20 @@ int read_colors(char input[]) {
 
 /* Main function */
 
-int main() {
+int main(int argc, char **argv) {
+
+	// if (argc != 2) {
+	// 	printf("Wrong number of arguments\n");
+	// 	return 1;
+	// }
+
+	char input[]  = "color/dsjc125.1.col";
 
 	srand(time(NULL));
     time_t start = time(NULL);
-    time_t running_time = 50; // seconds
+    time_t running_time = 60; // seconds
     int recuit = 1;
 
-	char input[] = "color/dsjc125.1.col";
 	if (readdata(input) == 1) {
 		printf("Looks like the file couldn't be opened\n");
 		return 1;
@@ -218,7 +237,7 @@ int main() {
 
 	int chromatic_number = max(colors, size);
 
-	printf("Chromatic number is %d \n", chromatic_number);
+	printf("Initial chromatic number is %d at %d seconds\n", chromatic_number, time(NULL) - start);
 	
 	if (write_solution(input) == 1) {
 		printf("Looks like you dont have a \"solutions\" folder, please create one so that the solution can be saved.\n");
@@ -229,14 +248,14 @@ int main() {
 		while (time(NULL) - start < running_time) {
 			down_count_colors(chromatic_number);
 
-			int e = recuit_simule(chromatic_number);
+			int e = recuit_simule2(chromatic_number);
 
 			if (e == 0) {
 				write_solution(input);
 				chromatic_number--;
 				printf("Found %d at %d seconds\n", chromatic_number, time(NULL) - start);
 			} else {
-				 read_colors(input);
+				 // read_colors(input);
 			}
 		}
 	}
@@ -369,7 +388,7 @@ retourne s
 */
 
 int recuit_simule(int color) {
-	int kmax = 100000;
+	int kmax = 100;
 	int en;
 	memcpy(temp_colors, colors, size*sizeof(int));
 	int e = incoherences();
@@ -383,12 +402,11 @@ int recuit_simule(int color) {
 		}
 		k++;
 	}
-	printf("Final e is %d\n", e);
 	return e;
 }
 
 float recuit_simule1(int color) {
-	int kmax = 150000;
+	int kmax = 100;
 	float en;
 	memcpy(temp_colors, colors, size*sizeof(int));
 	float e = incoherences1();
@@ -402,16 +420,43 @@ float recuit_simule1(int color) {
 		}
 		k++;
 	}
-	printf("Final e is %f\n", e);
 	return e;
 }
-/*
-int cost(int )
 
-int recuit_simule1(int color) {
+int cost(int a) {
+	if (a == 0) {
+		int result = 0;
+		for (int i=0; i<size; i++) {
+			for (int j=0; j<i; j++) {
+				if (matrix[i][j] == 1) {
+					if (colors[i] == colors[j]) {
+						result++;
+					}
+				}
+			}
+		}
+		return result;
+	} else {
+		int result = 0;
+		for (int i=0; i<size; i++) {
+			for (int j=0; j<i; j++) {
+				if (matrix[i][j] == 1) {
+					if (temp_colors[i] == temp_colors[j]) {
+						result++;
+					}
+				}
+			}
+		}
+		return result;
+	}
+}
+
+int recuit_simule2(int color) {
 	const int FREEZE_LIM = 10;
 	const float MINPERCENT = 0.30f;
 	const float CUTOFF = 0.10f;
+	const float SIZEFACTOR = 0.19f;
+	const float TEMPFACTOR = 0.19f;
 	float t = 2.0f;
 
 	int c = cost(0);
@@ -420,12 +465,12 @@ int recuit_simule1(int color) {
 	while (freeze_count < FREEZE_LIM) {
 		int changes, trials = 0;
 		int changed = 0;
-		while (trials < SIZEFACTOR*N && changes<CUTOFF*N) {
+		while (trials < SIZEFACTOR*size && changes<CUTOFF*size) {
 			trials++;
-			next_change()
+			generate_coloration(color);
 			new_c = cost(1);
 			int delta = new_c - c;
-			if (delta <= 0 || random < exp(-delta/t) {
+			if (delta <= 0 || random() < exp(-delta/t)) {
 				changes++;
 				c = new_c;
 				memcpy(colors, temp_colors, size*sizeof(int));
@@ -437,8 +482,9 @@ int recuit_simule1(int color) {
 			freeze_count = 0;
 		}
 		if (((float)changes/(float)trials)<MINPERCENT) {
-			freezecount++;
+			freeze_count++;
 		}
 	}
-	return 0;
-}*/
+	return c;
+}
+
