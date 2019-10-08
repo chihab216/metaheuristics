@@ -18,6 +18,7 @@ void print_temp_colors();
 void print_neighbours();
 int incoherences();
 void down_count_colors();
+float recuit_simule1();
 int recuit_simule();
 
 
@@ -197,9 +198,9 @@ int main() {
 	srand(time(NULL));
     time_t start = time(NULL);
     time_t running_time = 50; // seconds
-    int recuit = 0;
+    int recuit = 1;
 
-	char input[] = "color/dsjc1000.9.col";
+	char input[] = "color/dsjc125.1.col";
 	if (readdata(input) == 1) {
 		printf("Looks like the file couldn't be opened\n");
 		return 1;
@@ -229,7 +230,7 @@ int main() {
 				chromatic_number--;
 				printf("Found %d at %d seconds\n", chromatic_number, time(NULL) - start);
 			} else {
-				read_colors(input);
+				 read_colors(input);
 			}
 		}
 	}
@@ -298,6 +299,23 @@ int incoherences() {
 	return result;
 }
 
+float incoherences1() {
+	float result = 0;
+	memset(concerned, 0, size*sizeof(int));
+	for (int i=0; i<size; i++) {
+		for (int j=0; j<i; j++) {
+			if (matrix[i][j] == 1) {
+				if (temp_colors[i] == temp_colors[j]) {
+					result += 1 - (1.0/(float)nb_neighbours[i] + 1.0/(float)nb_neighbours[j]);
+					concerned[i] = 1;
+					concerned[j] = 1;
+				}
+			}
+		}
+	}
+	return result;
+}
+
 void down_count_colors(int color) {
 	for (int i=0; i<size; i++) {
 		if (colors[i] == color) {
@@ -345,7 +363,7 @@ retourne s
 */
 
 int recuit_simule(int color) {
-	int kmax = 150000;
+	int kmax = 100000;
 	int en;
 	memcpy(temp_colors, colors, size*sizeof(int));
 	int e = incoherences();
@@ -360,6 +378,25 @@ int recuit_simule(int color) {
 		k++;
 	}
 	printf("Final e is %d\n", e);
+	return e;
+}
+
+float recuit_simule1(int color) {
+	int kmax = 150000;
+	float en;
+	memcpy(temp_colors, colors, size*sizeof(int));
+	float e = incoherences1();
+	int k = 0;
+	while (k<kmax && e>0) {
+		generate_coloration1(color);
+		en = incoherences1();
+		if (en < e || random() < 0.01) { // 
+			memcpy(colors, temp_colors, size*sizeof(int));
+			e = en; 
+		}
+		k++;
+	}
+	printf("Final e is %f\n", e);
 	return e;
 }
 /*
