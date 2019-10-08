@@ -215,7 +215,7 @@ int main(int argc, char **argv) {
 	// 	return 1;
 	// }
 
-	char input[]  = "color/dsjc125.1.col";
+	char input[]  = "color/dsjc1000.5.col";
 
 	srand(time(NULL));
     time_t start = time(NULL);
@@ -248,7 +248,7 @@ int main(int argc, char **argv) {
 		while (time(NULL) - start < running_time) {
 			down_count_colors(chromatic_number);
 
-			int e = recuit_simule2(chromatic_number);
+			int e = recuit_simule(chromatic_number);
 
 			if (e == 0) {
 				write_solution(input);
