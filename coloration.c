@@ -154,7 +154,7 @@ int dsat_max() {
 	return dsat_summit;
 }
 
-void write_solution(char input[]) {
+int write_solution(char input[]) {
 	FILE *ofp;
 	int l = strlen(input) + 4;
 	char output[l];
@@ -163,10 +163,12 @@ void write_solution(char input[]) {
     memmove(output + 10, input + 6, l-5);
     output[l-3] = 's';
    	ofp = fopen(output, "w+");
+   	if (ofp == NULL) return 1;
    	for (int i=0; i<size; i++) {
    		fprintf(ofp, "%d\n", colors[i]);
    	}
    	fclose(ofp);
+   	return 0;
 }
 
 int read_colors(char input[]) {
@@ -217,7 +219,11 @@ int main() {
 	int chromatic_number = max(colors, size);
 
 	printf("Chromatic number is %d \n", chromatic_number);
-	write_solution(input);
+	
+	if (write_solution(input) == 1) {
+		printf("Looks like you dont have a \"solutions\" folder, please create one so that the solution can be saved.\n");
+		return 1;
+	}
 
 	if (recuit == 1) {
 		while (time(NULL) - start < running_time) {
